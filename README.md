@@ -27,3 +27,11 @@ cloudflared tunnel --url http://127.0.0.1:3210
 ```
 
 将输出的 https://…trycloudflare.com 地址发给朋友。地址在重启后可能变化；电脑、Dify、网页服务和隧道均需持续运行。隧道只代理客服网页，不代理 Dify 管理后台。持有分享链接的人可以使用工作流，模型调用会消耗你的额度。服务限制同时最多 3 个上游调用。
+
+也可使用本机自带 SSH（本次已采用）：
+
+```
+ssh -o ServerAliveInterval=30 -R 80:127.0.0.1:3210 nokey@localhost.run
+```
+
+分享终端输出的 HTTPS 链接；免费临时域名可能失效或随连接重建而变化。
