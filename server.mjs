@@ -23,7 +23,7 @@ if(typeof category==='string'&&category.trim())return send(res,200,{kind:'human'
 if(typeof answer==='string'&&answer.trim())return send(res,200,{kind:answer.includes('需要人工客服进一步核实')?'human':'auto',category:answer.includes('需要人工客服进一步核实')?'拿不准':'参数',answer,question});
 return send(res,502,{error:'工作流输出格式不匹配，请检查结束节点字段。'});
 }
-if(req.method==='GET'&&['/','/app.js','/style.css'].includes(req.url)){const file=req.url==='/'?'index.html':req.url.slice(1);res.setHeader('Content-Type',file.endsWith('html')?'text/html; charset=utf-8':file.endsWith('css')?'text/css':'text/javascript');return res.end(await readFile(new URL('public/'+file,import.meta.url)));}
+if(['GET','HEAD'].includes(req.method)&&['/','/app.js','/style.css'].includes(req.url)){const file=req.url==='/'?'index.html':req.url.slice(1);res.setHeader('Content-Type',file.endsWith('html')?'text/html; charset=utf-8':file.endsWith('css')?'text/css':'text/javascript');return res.end(req.method==='HEAD'?undefined:await readFile(new URL('public/'+file,import.meta.url)));}
 send(res,404,{error:'未找到'});
 }catch(e){send(res,502,{error:e.name==='TimeoutError'?'Dify 响应超时，请稍后重试。':'请求未完成，请检查本机 Dify 是否运行。'});}
 }).listen(Number(process.env.PORT||3210),process.env.HOST||'127.0.0.1',()=>console.log('潮玩客服服务已启动'));
