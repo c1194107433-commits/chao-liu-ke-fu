@@ -1,5 +1,5 @@
 const $=s=>document.querySelector(s);let original='',pending=0;
-fetch('/api/product').then(r=>r.json()).then(d=>{original=d.product;$('#product').value=original;$('#connection').className=d.connected?'connected':'disconnected';$('#connection').textContent=d.connected?'● 本机 Dify · 已配置':'○ 等待配置密钥';}).catch(()=>{$('#connection').textContent='连接异常';$('#connection').className='disconnected'});
+fetch('/api/product').then(r=>r.json()).then(d=>{original=d.product;$('#product').value=original;$('#connection').className=d.connected?'connected':'disconnected';$('#connection').textContent=d.connected?'● '+d.backend+' · 已配置':'○ 等待配置密钥';}).catch(()=>{$('#connection').textContent='连接异常';$('#connection').className='disconnected'});
 $('#reset').onclick=()=>{$('#product').value=original};
 document.querySelectorAll('.examples button').forEach(b=>b.onclick=()=>{$('#question').value=b.textContent;$('#question').focus()});
 function bubble(text,type,label){const el=document.createElement('div');el.className='bubble '+type;const small=document.createElement('small');small.textContent=label;el.append(small,document.createTextNode(text));$('#messages').append(el);el.scrollIntoView({block:'nearest'});return el;}

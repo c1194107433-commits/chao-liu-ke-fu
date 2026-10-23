@@ -12,7 +12,7 @@ res.setHeader('X-Content-Type-Options','nosniff');
 res.setHeader('Referrer-Policy','same-origin');
 res.setHeader('X-Frame-Options','DENY');
 try{
-if(req.method==='GET'&&req.url==='/api/product')return send(res,200,{product,connected:!!key});
+if(req.method==='GET'&&req.url==='/api/product')return send(res,200,{product,connected:!!key,backend:base.includes('api.dify.ai')?'云端 Dify':'本机 Dify'});
 if(req.method==='POST'&&req.url==='/api/run'){
 const access=process.env.SITE_ACCESS_CODE;
 if(process.env.VERCEL && (!access||access.length<16))return send(res,503,{error:'站点尚未完成安全配置，请联系维护者。'});
