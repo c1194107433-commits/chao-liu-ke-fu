@@ -1,16 +1,29 @@
 import http from 'node:http';
+import {timingSafeEqual,createHash} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
 const key=process.env.DIFY_API_KEY;
 const base=(process.env.DIFY_BASE_URL||'http://localhost/v1').replace(/\/$/,'');
 let active=0;
 const product=await readFile(new URL('data/product_info.txt',import.meta.url),'utf8');
 const send=(res,status,data)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8'});res.end(JSON.stringify(data));};
-http.createServer(async(req,res)=>{
+export default async function handler(req,res){
+res.setHeader('Cache-Control','no-store');
+res.setHeader('X-Content-Type-Options','nosniff');
+res.setHeader('Referrer-Policy','same-origin');
+res.setHeader('X-Frame-Options','DENY');
 try{
 if(req.method==='GET'&&req.url==='/api/product')return send(res,200,{product,connected:!!key});
 if(req.method==='POST'&&req.url==='/api/run'){
+const access=process.env.SITE_ACCESS_CODE;
+if(process.env.VERCEL && (!access||access.length<16))return send(res,503,{error:'站点尚未完成安全配置，请联系维护者。'});
+if(access){
+const supplied=String(req.headers['x-access-code']||'');
+const digest=v=>createHash('sha256').update(v).digest();
+if(!timingSafeEqual(digest(supplied),digest(access)))return send(res,401,{error:'访问码不正确，请向分享者获取。'});
+}
 if(req.headers.origin && ![`http://${req.headers.host}`,`https://${req.headers.host}`].includes(req.headers.origin))return send(res,403,{error:'请求来源不允许'});
-let body='';for await(const chunk of req){body+=chunk;if(body.length>30000)return send(res,413,{error:'输入过长'});}
+let body='';if(req.body!==undefined){body=typeof req.body==='string'?req.body:JSON.stringify(req.body);}else{for await(const chunk of req){body+=chunk;if(body.length>30000)return send(res,413,{error:'输入过长'});}}
+if(body.length>30000)return send(res,413,{error:'输入过长'});
 const {question,product_info}=JSON.parse(body);
 if(typeof question!=='string'||!question.trim()||question.length>2000||typeof product_info!=='string'||!product_info.trim()||product_info.length>20000)return send(res,400,{error:'请填写问题和商品资料，并检查长度'});
 if(!key)return send(res,503,{error:'尚未配置 Dify API Key，请设置环境变量后重启'});
@@ -26,4 +39,5 @@ return send(res,502,{error:'工作流输出格式不匹配，请检查结束节�
 if(['GET','HEAD'].includes(req.method)&&['/','/app.js','/style.css'].includes(req.url)){const file=req.url==='/'?'index.html':req.url.slice(1);res.setHeader('Content-Type',file.endsWith('html')?'text/html; charset=utf-8':file.endsWith('css')?'text/css':'text/javascript');return res.end(req.method==='HEAD'?undefined:await readFile(new URL('public/'+file,import.meta.url)));}
 send(res,404,{error:'未找到'});
 }catch(e){send(res,502,{error:e.name==='TimeoutError'?'Dify 响应超时，请稍后重试。':'请求未完成，请检查本机 Dify 是否运行。'});}
-}).listen(Number(process.env.PORT||3210),process.env.HOST||'127.0.0.1',()=>console.log('潮玩客服服务已启动'));
+}
+if(!process.env.VERCEL)http.createServer(handler).listen(Number(process.env.PORT||3210),process.env.HOST||'127.0.0.1',()=>console.log('潮玩客服服务已启动'));

@@ -1,0 +1,6 @@
+{
+  "version": 2,
+  "framework": null,
+  "functions": {"api/handler.mjs": {"maxDuration": 150, "includeFiles": ["data/**", "public/**"]}},
+  "rewrites": [{"source": "/api/:path*", "destination": "/api/handler"}]
+}
