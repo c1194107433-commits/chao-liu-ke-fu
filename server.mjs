@@ -2,6 +2,7 @@ import http from 'node:http';
 import {readFile} from 'node:fs/promises';
 const key=process.env.DIFY_API_KEY;
 const base=(process.env.DIFY_BASE_URL||'http://localhost/v1').replace(/\/$/,'');
+let active=0;
 const product=await readFile(new URL('data/product_info.txt',import.meta.url),'utf8');
 const send=(res,status,data)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8'});res.end(JSON.stringify(data));};
 http.createServer(async(req,res)=>{
@@ -13,7 +14,8 @@ let body='';for await(const chunk of req){body+=chunk;if(body.length>30000)retur
 const {question,product_info}=JSON.parse(body);
 if(typeof question!=='string'||!question.trim()||question.length>2000||typeof product_info!=='string'||!product_info.trim()||product_info.length>20000)return send(res,400,{error:'请填写问题和商品资料，并检查长度'});
 if(!key)return send(res,503,{error:'尚未配置 Dify API Key，请设置环境变量后重启'});
-const upstream=await fetch(base+'/workflows/run',{method:'POST',headers:{Authorization:`Bearer ${key}`,'Content-Type':'application/json'},body:JSON.stringify({inputs:{question,product_info},response_mode:'blocking',user:'chaowan-local-workbench'}),signal:AbortSignal.timeout(120000)});
+if(active>=3)return send(res,429,{error:'当前咨询较多，请稍后重试。'});
+active++;let upstream;try{upstream=await fetch(base+'/workflows/run',{method:'POST',headers:{Authorization:`Bearer ${key}`,'Content-Type':'application/json'},body:JSON.stringify({inputs:{question,product_info},response_mode:'blocking',user:'chaowan-local-workbench'}),signal:AbortSignal.timeout(120000)});}finally{active--;}
 if(!upstream.ok)return send(res,502,{error:`Dify 调用失败（${upstream.status}），请检查密钥、已发布版本和模型配置。`});
 const result=await upstream.json();if(result.data?.status!=='succeeded')return send(res,502,{error:'工作流未成功完成，请在 Dify 日志中查看原因。'});
 const o=result.data.outputs||{};const category=o.reasoning_content||o.category;const answer=o.title||o.answer;

@@ -17,3 +17,13 @@ GitHub 存储源码，本项目包含服务端接口，不能仅用 GitHub Pages
 工作流输入为 question、product_info；自动回复输出 title（兼容 answer）；人工分支输出 reasoning_content（兼容 category）及 text。
 
 默认商品资料位于 data/product_info.txt。每次问题独立调用，无对话记忆。商品资料可编辑。待人工记录仅保存在当前页面，刷新后清空；尚未接入真人或工单系统。
+
+## 临时分享本机网页
+
+安装 Cloudflare 官方工具 `cloudflared` 后，在网页服务运行时执行：
+
+```
+cloudflared tunnel --url http://127.0.0.1:3210
+```
+
+将输出的 https://…trycloudflare.com 地址发给朋友。地址在重启后可能变化；电脑、Dify、网页服务和隧道均需持续运行。隧道只代理客服网页，不代理 Dify 管理后台。持有分享链接的人可以使用工作流，模型调用会消耗你的额度。服务限制同时最多 3 个上游调用。
