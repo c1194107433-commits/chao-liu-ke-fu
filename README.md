@@ -38,6 +38,8 @@ ssh -o ServerAliveInterval=30 -R 80:127.0.0.1:3210 nokey@localhost.run
 
 ## Vercel
 
-导入本仓库，框架选择 Other。静态资源位于 public/，API 入口为 api/handler.mjs。配置 DIFY_BASE_URL、DIFY_API_KEY 和至少 16 字符的随机 SITE_ACCESS_CODE（仅通过服务端环境变量配置）。访问码只用于调用问答接口，页面和示例商品资料仍公开可见；不要在默认资料中保存敏感信息。访问码不会写入浏览器持久存储。
+导入本仓库，框架选择 Other。静态资源位于 public/，API 入口为 api/product.mjs 和 api/run.mjs。配置 DIFY_BASE_URL、DIFY_API_KEY 和至少 16 字符的随机 SITE_ACCESS_CODE（仅通过服务端环境变量配置）。访问码只用于调用问答接口，页面和示例商品资料仍公开可见；不要在默认资料中保存敏感信息。访问码不会写入浏览器持久存储。
 
 未设置访问码或访问码错误时，不调用 Dify。内存并发限制只适用于单个函数实例，不是全局限流；规模化使用需另配平台防火墙或共享限流存储。Vercel 无法访问开发电脑 localhost，需云端 Dify 或另行受保护的公网桥接；不能将本机密钥用于云端应用。默认域名在大陆移动网络的可达性需实测。
+
+生产地址：https://chao-liu-ke-fu.vercel.app 。已验证云端 Dify 调用与访问码保护。当前通过 CLI 部署；GitHub 自动部署关联尚未完成。
